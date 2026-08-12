@@ -183,7 +183,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         display = user.full_name or str(user.id)
         reasons = ", ".join(verdict.reasons[:3]) or "подозрительный контент"
         await context.bot.send_message(
-            chat_id=chat.id,
+            chat_id=cfg.admin_chat_id,
             text=(
                 f"🚫 Удалено спам-сообщение от {display}.\n"
                 f"Пользователь {action}.\n"

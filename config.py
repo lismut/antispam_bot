@@ -18,12 +18,17 @@ class Config:
     allowed_chat_ids: set[int]
     spam_threshold: int
     log_level: str
+    admin_chat_id: int
 
 
 def load_config() -> Config:
     token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
     if not token:
         raise ValueError("TELEGRAM_BOT_TOKEN не задан. Скопируйте .env.example в .env и укажите токен.")
+
+    admin_chat_id = os.getenv("ADMIN_CHAT_ID", "").strip()
+    if not admin_chat_id:
+        raise ValueError("ADMIN_CHAT_ID не задан. Скопируйте .env.example в .env и укажите токен.")
 
     threshold = int(os.getenv("SPAM_THRESHOLD", "50"))
     if not 0 <= threshold <= 100:
