@@ -26,8 +26,8 @@ def load_config() -> Config:
     if not token:
         raise ValueError("TELEGRAM_BOT_TOKEN не задан. Скопируйте .env.example в .env и укажите токен.")
 
-    admin_chat_id = os.getenv("ADMIN_CHAT_ID", "").strip()
-    if not admin_chat_id:
+    chat_id = os.getenv("ADMIN_CHAT_ID", "").strip()
+    if not chat_id:
         raise ValueError("ADMIN_CHAT_ID не задан. Скопируйте .env.example в .env и укажите токен.")
 
     threshold = int(os.getenv("SPAM_THRESHOLD", "50"))
@@ -39,4 +39,5 @@ def load_config() -> Config:
         allowed_chat_ids=_parse_chat_ids(os.getenv("ALLOWED_CHAT_IDS", "")),
         spam_threshold=threshold,
         log_level=os.getenv("LOG_LEVEL", "INFO").upper(),
+        admin_chat_id=chat_id,
     )
