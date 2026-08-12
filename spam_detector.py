@@ -161,7 +161,7 @@ class SpamDetector:
 
         for pattern in self._keyword_res:
             if pattern.search(combined):
-                score += 25
+                score += 35
                 reasons.append(f"ключевое слово: {pattern.pattern}")
                 break
 
@@ -173,7 +173,7 @@ class SpamDetector:
             for url in urls:
                 for pattern in self._url_res:
                     if pattern.search(url):
-                        score += 25
+                        score += 35
                         reasons.append("сокращённая/подозрительная ссылка")
                         break
 
