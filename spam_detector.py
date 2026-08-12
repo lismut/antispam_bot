@@ -22,8 +22,19 @@ SPAM_KEYWORDS = [
     r"удал[её]нн[ая]+ работа",
     r"forex",
     r"бинарн[ые]+ опцион",
-    r"usd",
-    r"usdt",
+    # Криптовалюты — более широкие паттерны
+    r"\bUSDT\b",
+    r"\bUSDC\b",
+    r"\bBTC\b",
+    r"\bETH\b",
+    r"\b(?:usdt?|usdc|btc|eth|ton|sol|doge|shib)\b",  # строчные варианты
+    r"чек.*USDT?",
+    r"получ.*USDT?",
+    r"вывод.*USDT?",
+    r"перевод.*USDT?",
+    r"крипто.*чек",
+    r"USDT?.*чек",
+    r"\d+\s*USDT?\b",  # Сумма с валютой
 ]
 
 SUSPICIOUS_URL_PATTERNS = [
@@ -34,6 +45,15 @@ SUSPICIOUS_URL_PATTERNS = [
     r"cutt\.ly",
     r"rb\.gy",
     r"short\.link",
+    # Крипто-связанные
+    r"cryptobot",
+    r"crypto.*bot",
+    r"tonkeeper",
+    r"pancake",
+    r"uniswap",
+    r"sushi\.com",
+    r"1inch",
+    r"dex\.\w+",
 ]
 
 URL_RE = re.compile(r"https?://[^\s]+|t\.me/[^\s]+|@\w+", re.IGNORECASE)
