@@ -28,7 +28,8 @@ def setup_logging(level: str) -> None:
     logging.basicConfig(
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
         level=getattr(logging, level, logging.INFO),
-        stream=sys.stdout,
+        filename="bot.log",
+        encoding="utf-8",
     )
 
 
@@ -112,37 +113,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         logger.warning("Бот не админ в чате %s — пропуск сообщения", chat.id)
         return
 
-    # Проверка на сообщения о вступлении в группу
-    if message.new_chat_members:
-        for new_member in message.new_chat_members:
-            if not new_member.is_bot:  # Не удаляем сообщения о добавлении ботов
-                try:
-                    await message.delete()
-                    logger.info(
-                        "Удалено сообщение о вступлении пользователя %s (@%s) в чат %s",
-                        new_member.id,
-                        new_member.username,
-                        chat.id,
-                    )
-                except (BadRequest, Forbidden) as exc:
-                    logger.error("Не удалось удалить сообщение о вступлении: %s", exc)
-        return  # Выходим после обработки сообщений о вступлении
-
-    # Проверка на сообщения о выходе из группы
-    if message.left_chat_member:
-        try:
-            await message.delete()
-            logger.info(
-                "Удалено сообщение о выходе пользователя %s (@%s) в чат %s",
-                new_member.id,
-                new_member.username,
-                chat.id,
-            )
-        except (BadRequest, Forbidden) as exc:
-            logger.error("Не удалось удалить сообщение о выходе: %s", exc)
-        return  # Выходим после обработки сообщений о выходе
-
-
     text = message.text or message.caption or ""
     detector: SpamDetector = context.bot_data["detector"]
     verdict = detector.analyze(
@@ -195,6 +165,51 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
     _log_incident(context, chat.id, user.id, user.username, verdict.score, verdict.reasons)
 
+async def handle_service_messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    message = update.effective_message
+    chat = update.effective_chat
+
+    if not message or not chat:
+        return
+
+    if chat.type not in (ChatType.GROUP, ChatType.SUPERGROUP):
+        return
+
+    cfg = context.bot_data["config"]
+    if cfg.allowed_chat_ids and chat.id not in cfg.allowed_chat_ids:
+        return
+
+    if not await is_bot_admin(update, context):
+        logger.warning("Бот не админ в чате %s — пропуск сервисного сообщения", chat.id)
+        return
+
+    # Удаление сообщений о вступлении
+    if message.new_chat_members:
+        for new_member in message.new_chat_members:
+            if not new_member.is_bot:
+                try:
+                    await message.delete()
+                    logger.info(
+                        "Удалено сообщение о вступлении пользователя %s (@%s) в чат %s",
+                        new_member.id,
+                        new_member.username,
+                        chat.id,
+                    )
+                except (BadRequest, Forbidden) as exc:
+                    logger.error("Не удалось удалить сообщение о вступлении: %s", exc)
+
+    # Удаление сообщений о выходе
+    if message.left_chat_member:
+        try:
+            await message.delete()
+            logger.info(
+                "Удалено сообщение о выходе пользователя %s (@%s) из чата %s",
+                message.left_chat_member.id,
+                message.left_chat_member.username,
+                chat.id,
+            )
+        except (BadRequest, Forbidden) as exc:
+            logger.error("Не удалось удалить сообщение о выходе: %s", exc)
 
 def _log_incident(
     context: ContextTypes.DEFAULT_TYPE,
@@ -242,6 +257,13 @@ def main() -> None:
         MessageHandler(
             (filters.TEXT | filters.CAPTION) & (~filters.COMMAND),
             handle_message,
+        )
+    )
+
+    app.add_handler(
+        MessageHandler(
+            filters.StatusUpdate.NEW_CHAT_MEMBERS | filters.StatusUpdate.LEFT_CHAT_MEMBER,
+            handle_service_messages,
         )
     )
 
