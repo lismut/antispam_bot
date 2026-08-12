@@ -112,6 +112,22 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         logger.warning("Бот не админ в чате %s — пропуск сообщения", chat.id)
         return
 
+    # Проверка на сообщения о вступлении в группу
+    if message.new_chat_members or message.left_chat_member:
+        for new_member in message.new_chat_members:
+            if not new_member.is_bot:  # Не удаляем сообщения о добавлении ботов
+                try:
+                    await message.delete()
+                    logger.info(
+                        "Удалено сообщение о вступлении пользователя %s (@%s) в чат %s",
+                        new_member.id,
+                        new_member.username,
+                        chat.id,
+                    )
+                except (BadRequest, Forbidden) as exc:
+                    logger.error("Не удалось удалить сообщение о вступлении: %s", exc)
+        return  # Выходим после обработки сообщений о вступлении
+
     text = message.text or message.caption or ""
     detector: SpamDetector = context.bot_data["detector"]
     verdict = detector.analyze(

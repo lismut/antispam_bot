@@ -22,6 +22,8 @@ SPAM_KEYWORDS = [
     r"удал[её]нн[ая]+ работа",
     r"forex",
     r"бинарн[ые]+ опцион",
+    r"usd",
+    r"usdt",
 ]
 
 SUSPICIOUS_URL_PATTERNS = [
@@ -171,7 +173,7 @@ class SpamDetector:
             for url in urls:
                 for pattern in self._url_res:
                     if pattern.search(url):
-                        score += 15
+                        score += 25
                         reasons.append("сокращённая/подозрительная ссылка")
                         break
 
