@@ -113,7 +113,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         return
 
     # Проверка на сообщения о вступлении в группу
-    if message.new_chat_members or message.left_chat_member:
+    if message.new_chat_members:
         for new_member in message.new_chat_members:
             if not new_member.is_bot:  # Не удаляем сообщения о добавлении ботов
                 try:
@@ -127,6 +127,21 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
                 except (BadRequest, Forbidden) as exc:
                     logger.error("Не удалось удалить сообщение о вступлении: %s", exc)
         return  # Выходим после обработки сообщений о вступлении
+
+    # Проверка на сообщения о выходе из группы
+    if message.left_chat_member:
+        try:
+            await message.delete()
+            logger.info(
+                "Удалено сообщение о выходе пользователя %s (@%s) в чат %s",
+                new_member.id,
+                new_member.username,
+                chat.id,
+            )
+        except (BadRequest, Forbidden) as exc:
+            logger.error("Не удалось удалить сообщение о выходе: %s", exc)
+        return  # Выходим после обработки сообщений о выходе
+
 
     text = message.text or message.caption or ""
     detector: SpamDetector = context.bot_data["detector"]
