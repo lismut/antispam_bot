@@ -100,18 +100,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     if user.is_bot:
         return
 
-    if message.entities:
-        for entity in message.entities:
-            if entity.type == "text_link":
-                # Добавляем скрытую ссылку к тексту
-                text += f" {entity.url}"
-    
-    # Для caption тоже проверяем entities
-    if message.caption_entities:
-        for entity in message.caption_entities:
-            if entity.type == "text_link":
-                text += f" {entity.url}"
-
     # Не трогаем администраторов и создателя чата
     try:
         member = await context.bot.get_chat_member(chat.id, user.id)
@@ -126,6 +114,19 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         return
 
     text = message.text or message.caption or ""
+
+    if message.entities:
+        for entity in message.entities:
+            if entity.type == "text_link":
+                # Добавляем скрытую ссылку к тексту
+                text += f" {entity.url}"
+    
+    # Для caption тоже проверяем entities
+    if message.caption_entities:
+        for entity in message.caption_entities:
+            if entity.type == "text_link":
+                text += f" {entity.url}"
+
     detector: SpamDetector = context.bot_data["detector"]
     verdict = detector.analyze(
         text,
