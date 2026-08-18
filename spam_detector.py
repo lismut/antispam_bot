@@ -146,7 +146,6 @@ class SpamDetector:
                             any(c in word for c in 'ABCcEeHhKkMmOoPpTtXxYy')):
                             score += 10
                             reasons.append(f"подмена букв в слове: {word[:20]}")
-                            break
             
             if mixed_words > 0:
                 score += 20 * mixed_words
@@ -192,7 +191,7 @@ class SpamDetector:
             if pattern.search(combined):
                 score += 35
                 reasons.append(f"ключевое слово: {pattern.pattern}")
-                break
+                print(f"ключевое слово: {pattern.pattern}")
 
         urls = URL_RE.findall(content)
         if urls:
