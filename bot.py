@@ -168,6 +168,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         await context.bot.send_message(
             chat_id=cfg.admin_chat_id,
             text=(
+                f"Чат {chat.title or chat.username or "Unknown"}"
                 f"🚫 Удалено спам-сообщение от {display}.\n"
                 f"Пользователь {action}.\n"
                 f"Причина: {reasons}"
